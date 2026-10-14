@@ -4,9 +4,10 @@
 FROM oven/bun:1.3.14-alpine@sha256:5acc90a93e91ff07bf72aa90a7c9f0fa189765aec90b47bdbf2152d2196383c0
 
 # git talks to the ShareLaTeX git bridge; tini reaps git's child processes and forwards signals.
-# Alpine package versions are not pinned on purpose: we want the latest security fixes.
-# hadolint ignore=DL3018
-RUN apk add --no-cache git tini ca-certificates
+# `apk upgrade` pulls security fixes the base image does not have yet (e.g. OpenSSL); package
+# versions are deliberately not pinned so every build gets the latest fixes. CI scans the result.
+# hadolint ignore=DL3017,DL3018
+RUN apk upgrade --no-cache && apk add --no-cache git tini ca-certificates
 
 WORKDIR /app
 

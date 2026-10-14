@@ -28,7 +28,8 @@ Run **exactly one** instance per ShareLaTeX project.
 
 1. In ShareLaTeX/Overleaf, open **Account settings → Git integration** and generate a token.
 2. The project's git URL is shown under **Menu → Git** in the project, e.g.
-   `https://latex.example.edu/git/<project-id>`. Use it **without** any credentials.
+   `https://git@latex.example.edu/git/<project-id>`. Paste it as is. Never add the token to the
+   URL: the token belongs in `secrets/sharelatex_git_token`.
 
 ### Store them as files
 

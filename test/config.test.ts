@@ -79,10 +79,30 @@ describe("loadConfig", () => {
     expect(config.sharelatex.bibPath).toBe("bib/refs.bib");
   });
 
-  test("rejects credentials embedded in the git URL", () => {
+  test("rejects a password or token embedded in the git URL", () => {
     expect(() =>
       loadConfig({ ...base, SHARELATEX_GIT_URL: "https://git:tok@latex.example.edu/git/x" }),
-    ).toThrow("must not contain credentials");
+    ).toThrow("must not contain a password or token");
+  });
+
+  test("accepts the URL as ShareLaTeX shows it (username only) and strips the username", () => {
+    const config = loadConfig(
+      { ...base, SHARELATEX_GIT_URL: "https://alice@latex.example.edu/git/abc123" },
+      noFiles,
+    );
+    expect(config.sharelatex.gitUrl).toBe("https://latex.example.edu/git/abc123");
+    expect(config.sharelatex.gitUsername).toBe("alice");
+  });
+
+  test("an explicit username must agree with the one in the URL", () => {
+    const url = "https://git@latex.example.edu/git/abc123";
+    expect(
+      loadConfig({ ...base, SHARELATEX_GIT_URL: url, SHARELATEX_GIT_USERNAME: "git" }, noFiles)
+        .sharelatex.gitUsername,
+    ).toBe("git");
+    expect(() =>
+      loadConfig({ ...base, SHARELATEX_GIT_URL: url, SHARELATEX_GIT_USERNAME: "bob" }, noFiles),
+    ).toThrow("conflicts");
   });
 
   test("requires https unless explicitly allowed", () => {

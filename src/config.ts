@@ -126,16 +126,20 @@ function parseEnum<T extends string>(
   return value as T;
 }
 
-function parseGitUrl(raw: string, allowHttp: boolean): URL {
+/**
+ * ShareLaTeX shows clone URLs like https://git@host/git/<id>. A bare username is not secret, so
+ * it is accepted, stripped from the URL and used as the git username. A password never is.
+ */
+function parseGitUrl(raw: string, allowHttp: boolean): { url: URL; username?: string } {
   let url: URL;
   try {
     url = new URL(raw);
   } catch {
     throw new ConfigError("SHARELATEX_GIT_URL is not a valid URL");
   }
-  if (url.username || url.password) {
+  if (url.password) {
     throw new ConfigError(
-      "SHARELATEX_GIT_URL must not contain credentials; use SHARELATEX_GIT_TOKEN(_FILE) instead",
+      "SHARELATEX_GIT_URL must not contain a password or token; use SHARELATEX_GIT_TOKEN(_FILE) instead",
     );
   }
   if (url.protocol !== "https:" && !(allowHttp && url.protocol === "http:")) {
@@ -143,7 +147,9 @@ function parseGitUrl(raw: string, allowHttp: boolean): URL {
       "SHARELATEX_GIT_URL must use https:// (set SHARELATEX_ALLOW_INSECURE_HTTP=true to allow http://)",
     );
   }
-  return url;
+  const username = url.username ? decodeURIComponent(url.username) : undefined;
+  url.username = "";
+  return { url, username };
 }
 
 function parseBibPath(raw: string): string {
@@ -173,7 +179,16 @@ export function loadConfig(env: Env = process.env, readFile: FileReader = defaul
   }
 
   const allowHttp = parseBool(env, "SHARELATEX_ALLOW_INSECURE_HTTP", false);
-  const gitUrl = parseGitUrl(required(env, "SHARELATEX_GIT_URL"), allowHttp);
+  const { url: gitUrl, username: urlUsername } = parseGitUrl(
+    required(env, "SHARELATEX_GIT_URL"),
+    allowHttp,
+  );
+  const explicitUsername = optional(env, "SHARELATEX_GIT_USERNAME");
+  if (explicitUsername && urlUsername && explicitUsername !== urlUsername) {
+    throw new ConfigError(
+      `SHARELATEX_GIT_USERNAME ("${explicitUsername}") conflicts with the username in SHARELATEX_GIT_URL ("${urlUsername}")`,
+    );
+  }
 
   const safetyIntervalMs = parseSeconds(env, "SYNC_SAFETY_INTERVAL_SECONDS", 3600, 60);
   const debounceMs = parseSeconds(env, "SYNC_DEBOUNCE_SECONDS", 30);
@@ -198,7 +213,7 @@ export function loadConfig(env: Env = process.env, readFile: FileReader = defaul
     },
     sharelatex: {
       gitUrl: gitUrl.href,
-      gitUsername: optional(env, "SHARELATEX_GIT_USERNAME") ?? "git",
+      gitUsername: explicitUsername ?? urlUsername ?? "git",
       gitToken: readSecret(env, "SHARELATEX_GIT_TOKEN", readFile),
       branch: optional(env, "SHARELATEX_GIT_BRANCH") ?? "master",
       bibPath: parseBibPath(optional(env, "SHARELATEX_BIB_PATH") ?? "references.bib"),

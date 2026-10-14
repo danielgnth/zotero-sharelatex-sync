@@ -26,9 +26,9 @@ Invalid configuration makes the process exit with code **2** and a message namin
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `SHARELATEX_GIT_URL` | required | The project's git URL, e.g. `https://latex.example.edu/git/<project-id>`. It **must not** contain credentials, and must use `https://`. |
+| `SHARELATEX_GIT_URL` | required | The project's git URL as ShareLaTeX shows it, e.g. `https://git@latex.example.edu/git/<project-id>`. A username in the URL (`git@`) is fine: it is removed and used as the git username. A password or token in the URL is rejected. Must use `https://`. |
 | `SHARELATEX_GIT_TOKEN` / `SHARELATEX_GIT_TOKEN_FILE` | required, **secret** | Git authentication token from your ShareLaTeX account settings. |
-| `SHARELATEX_GIT_USERNAME` | `git` | Username sent with the token. Overleaf uses `git`; change it only if your instance expects something else. |
+| `SHARELATEX_GIT_USERNAME` | from URL, else `git` | Username sent with the token. Defaults to the username in `SHARELATEX_GIT_URL`, otherwise `git`. If both are set, they must match. |
 | `SHARELATEX_GIT_BRANCH` | `master` | Branch to push to (Overleaf projects use `master`). |
 | `SHARELATEX_BIB_PATH` | `references.bib` | Path of the generated file inside the project. Must be relative and stay inside the project. |
 | `SHARELATEX_COMMIT_MESSAGE` | `Update bibliography from Zotero` | Commit message. |

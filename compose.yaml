@@ -1,20 +1,20 @@
-# Example deployment. Put the two secrets into ./secrets/ first (see docs/deployment.md):
+# Example deployment. Before starting:
+#   cp .env.example .env    # then edit .env (library, collection, git URL, ...)
+# and put the two secrets into ./secrets/ (see docs/deployment.md):
 #   ./secrets/zotero_api_key        Zotero API key (read-only)
 #   ./secrets/sharelatex_git_token  ShareLaTeX git authentication token
 services:
   zotero-sharelatex-sync:
     image: ghcr.io/danielgnth/zotero-sharelatex-sync:latest
     restart: unless-stopped
+    # Settings live in .env (copy .env.example). Only the secret file paths are set here,
+    # because they belong to the secrets mounted below.
+    env_file:
+      - path: .env
+        required: true
     environment:
-      ZOTERO_LIBRARY_TYPE: user # or "group"
-      ZOTERO_LIBRARY_ID: "1234567"
-      ZOTERO_COLLECTION_KEY: ABCD2345 # remove to sync the whole library
-      ZOTERO_INCLUDE_SUBCOLLECTIONS: "true"
-      BIB_FORMAT: bibtex # or "biblatex"
       ZOTERO_API_KEY_FILE: /run/secrets/zotero_api_key
-      SHARELATEX_GIT_URL: https://sharelatex.example.edu/git/0123456789abcdef01234567
       SHARELATEX_GIT_TOKEN_FILE: /run/secrets/sharelatex_git_token
-      SHARELATEX_BIB_PATH: references.bib
     secrets:
       - zotero_api_key
       - sharelatex_git_token

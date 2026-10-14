@@ -15,14 +15,18 @@ Do not add shell, Python or Node scripts.
 
 ## Running locally
 
+Bun loads `.env` from the working directory automatically, so the same `.env` as for Compose works.
+Only the secret paths differ, because they point to local files:
+
 ```sh
-export ZOTERO_LIBRARY_ID=1234567 ZOTERO_COLLECTION_KEY=ABCD2345
-export ZOTERO_API_KEY_FILE=$PWD/secrets/zotero_api_key
-export SHARELATEX_GIT_URL=https://latex.example.edu/git/<project-id>
-export SHARELATEX_GIT_TOKEN_FILE=$PWD/secrets/sharelatex_git_token
-bun src/index.ts once      # single sync
-LOG_LEVEL=debug bun src/index.ts   # daemon
+cp .env.example .env   # edit it
+export ZOTERO_API_KEY_FILE=secrets/zotero_api_key
+export SHARELATEX_GIT_TOKEN_FILE=secrets/sharelatex_git_token
+bun src/index.ts once                # single sync
+LOG_LEVEL=debug bun src/index.ts     # daemon
 ```
+
+The tests never depend on `.env`: they pass explicit environments.
 
 ## Tests
 

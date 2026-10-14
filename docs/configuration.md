@@ -5,6 +5,10 @@ either directly (`NAME`) or as a path to a file containing it (`NAME_FILE`). Set
 error. The file content is trimmed, so trailing newlines are fine. Prefer `_FILE` with Docker or
 Kubernetes secrets.
 
+With Docker Compose, set the variables in a `.env` file. Copy [.env.example](../.env.example), which
+lists the common ones. With Kubernetes, set them in the Deployment's `env`, or in a ConfigMap
+referenced via `envFrom`.
+
 Invalid configuration makes the process exit with code **2** and a message naming the variable.
 
 ## Zotero

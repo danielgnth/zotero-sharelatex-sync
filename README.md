@@ -37,7 +37,13 @@ flowchart LR
    #   secrets/sharelatex_git_token
    ```
 
-3. Adjust the library ID, collection key and git URL in [compose.yaml](compose.yaml), then:
+3. Create your settings file and adjust library ID, collection key and git URL:
+
+   ```sh
+   cp .env.example .env
+   ```
+
+4. Test once, then start the daemon ([compose.yaml](compose.yaml) reads `.env`):
 
    ```sh
    docker compose run --rm zotero-sharelatex-sync once   # test once

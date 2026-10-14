@@ -44,9 +44,12 @@ them with an editor instead of `printf`).
 
 ## 2a. Docker Compose
 
-Edit [compose.yaml](../compose.yaml) (library, collection, git URL) and start the service:
+[compose.yaml](../compose.yaml) reads all settings from a `.env` file next to it (via `env_file`,
+so it is required). The only variables in `compose.yaml` itself are the two `*_FILE` paths, because
+they belong to the secrets it mounts. Do not put secrets into `.env`; keep them in `secrets/`.
 
 ```sh
+cp .env.example .env   # then edit: library, collection, git URL, format, ...
 # The container runs as UID 1000; the secret files must be readable by it.
 sudo chown 1000:1000 secrets/*
 docker compose up -d

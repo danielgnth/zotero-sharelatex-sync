@@ -54,8 +54,13 @@ docker run --rm -v "$PWD:/repo:ro" -w /repo ghcr.io/zizmorcore/zizmor:1.30.1 .
 - The repository is `github.com/danielgnth/zotero-sharelatex-sync`. Only ever use the GitHub
   account **danielgnth**. **Never use the account `danielgnt`** (note the missing "h"). It is a
   different account. Check with `gh auth status` before any `gh` call that writes.
-- Commits use the repo-local identity `Daniel Günther <mail@danielgnth.de>`. The user's global git
-  email belongs to the other account, so do not remove the local `user.email`.
+- Do not set a repo-local `user.email`/`user.name`. The user's global git config includes
+  `~/.config/git/config-secondary` for everything under `.../Coding/01_danielgnth/` (`includeIf`).
+  That file sets the danielgnth identity (noreply email), the SSH signing key and the SSH key. Check
+  with `git config --show-origin user.email`, never with `git config --global user.email`, which
+  ignores the include and shows the other account's email.
+- The remote uses HTTPS with a repo-local credential helper `!gh auth git-credential` (the macOS
+  keychain may hold credentials for the other account).
 - In workflows, pin every action to a full commit SHA with a `# vX.Y.Z` comment, keep
   `permissions` minimal per job, use `persist-credentials: false`, and avoid caches. CI runs
   actionlint and zizmor, so run them locally first.

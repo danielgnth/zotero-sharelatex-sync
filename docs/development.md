@@ -54,7 +54,7 @@ and `v*` tags:
 | Lint Dockerfile | [hadolint](https://github.com/hadolint/hadolint) |
 | Secret scan | [gitleaks](https://github.com/gitleaks/gitleaks) over the full history |
 | Build & scan image | Builds the image, smoke-tests it, and runs [grype](https://github.com/anchore/grype) (fails on fixable high/critical CVEs) |
-| Publish (push events only) | Multi-arch build and push to GHCR with BuildKit SBOM/provenance, a Syft SPDX SBOM, and GitHub attestations for provenance and SBOM |
+| Publish (push events only) | Multi-arch build and push to GHCR with BuildKit SBOM/provenance, a Syft SPDX SBOM, and `actions/attest` attestations for provenance and SBOM (stored on the repo and pushed to GHCR) |
 
 Publishing only runs after all other jobs pass. Releases: push a tag `vX.Y.Z` on `main`.
 

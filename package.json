@@ -2,6 +2,7 @@
   "name": "zotero-sharelatex-sync",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "description": "Event-driven sync of a Zotero library or collection into a ShareLaTeX/Overleaf project via the git bridge.",
   "type": "module",
   "packageManager": "bun@1.3.14",

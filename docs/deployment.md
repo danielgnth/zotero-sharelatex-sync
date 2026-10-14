@@ -86,7 +86,17 @@ host. Add a NetworkPolicy if your cluster enforces them.
 ## Verify the image
 
 Every published image carries a SLSA build-provenance attestation and an SPDX SBOM attestation,
-signed through GitHub's Sigstore integration:
+signed through GitHub's Sigstore integration and recorded in the public Rekor transparency log.
+
+**Where to see them on GitHub:** the repository's
+[Attestations page](https://github.com/danielgnth/zotero-sharelatex-sync/attestations)
+(**Actions** tab → **Attestations** in the sidebar). Each publish run's summary links its
+attestations too. The package page on GHCR does not list attestations; there they show up only as
+an extra `sha256-<digest>` tag, which is how they are stored next to the image because GHCR has no
+OCI referrers API. GitHub's "Linked artifacts" view (artifact storage records) only exists for
+organization-owned repositories, so it does not apply to this personal repository.
+
+Verify from the command line:
 
 ```sh
 gh attestation verify oci://ghcr.io/danielgnth/zotero-sharelatex-sync:latest --owner danielgnth
@@ -94,7 +104,8 @@ gh attestation verify oci://ghcr.io/danielgnth/zotero-sharelatex-sync:latest --o
   --predicate-type https://spdx.dev/Document/v2.3
 ```
 
-BuildKit also attaches its own SBOM and provenance to the image index
+BuildKit also attaches its own SBOM and provenance to the image index. They appear as
+`unknown/unknown` platform entries on the package page
 (`docker buildx imagetools inspect --format '{{json .SBOM}}' <image>`).
 
 ## Operating it

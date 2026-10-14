@@ -82,3 +82,7 @@ The generated `.bib` file is owned by the tool. Do not edit it in ShareLaTeX.
 bun install
 bun run check   # lint, typecheck, tests
 ```
+
+## License
+
+[MIT](LICENSE)

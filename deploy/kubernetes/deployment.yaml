@@ -1,0 +1,82 @@
+# Example Kubernetes deployment. Create the secret first (see docs/deployment.md):
+#   kubectl create secret generic zotero-sharelatex-sync \
+#     --from-file=zotero_api_key=./secrets/zotero_api_key \
+#     --from-file=sharelatex_git_token=./secrets/sharelatex_git_token
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zotero-sharelatex-sync
+  labels:
+    app.kubernetes.io/name: zotero-sharelatex-sync
+spec:
+  replicas: 1 # exactly one instance; more would only race each other's pushes
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zotero-sharelatex-sync
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zotero-sharelatex-sync
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: sync
+          image: ghcr.io/danielgnth/zotero-sharelatex-sync:latest
+          args: ["daemon"]
+          env:
+            - name: ZOTERO_LIBRARY_TYPE
+              value: user
+            - name: ZOTERO_LIBRARY_ID
+              value: "1234567"
+            - name: ZOTERO_COLLECTION_KEY
+              value: ABCD2345
+            - name: BIB_FORMAT
+              value: bibtex
+            - name: ZOTERO_API_KEY_FILE
+              value: /run/secrets/zotero-sharelatex-sync/zotero_api_key
+            - name: SHARELATEX_GIT_URL
+              value: https://sharelatex.example.edu/git/0123456789abcdef01234567
+            - name: SHARELATEX_GIT_TOKEN_FILE
+              value: /run/secrets/zotero-sharelatex-sync/sharelatex_git_token
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          livenessProbe:
+            exec:
+              command: ["bun", "/app/src/index.ts", "healthcheck"]
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          volumeMounts:
+            - name: secrets
+              mountPath: /run/secrets/zotero-sharelatex-sync
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: secrets
+          secret:
+            secretName: zotero-sharelatex-sync
+            defaultMode: 0440
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: 64Mi

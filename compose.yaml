@@ -1,0 +1,40 @@
+# Example deployment. Put the two secrets into ./secrets/ first (see docs/deployment.md):
+#   ./secrets/zotero_api_key        Zotero API key (read-only)
+#   ./secrets/sharelatex_git_token  ShareLaTeX git authentication token
+services:
+  zotero-sharelatex-sync:
+    image: ghcr.io/danielgnth/zotero-sharelatex-sync:latest
+    restart: unless-stopped
+    environment:
+      ZOTERO_LIBRARY_TYPE: user # or "group"
+      ZOTERO_LIBRARY_ID: "1234567"
+      ZOTERO_COLLECTION_KEY: ABCD2345 # remove to sync the whole library
+      ZOTERO_INCLUDE_SUBCOLLECTIONS: "true"
+      BIB_FORMAT: bibtex # or "biblatex"
+      ZOTERO_API_KEY_FILE: /run/secrets/zotero_api_key
+      SHARELATEX_GIT_URL: https://sharelatex.example.edu/git/0123456789abcdef01234567
+      SHARELATEX_GIT_TOKEN_FILE: /run/secrets/sharelatex_git_token
+      SHARELATEX_BIB_PATH: references.bib
+    secrets:
+      - zotero_api_key
+      - sharelatex_git_token
+    # Hardening: nothing in the image needs to write outside /tmp or hold any capability.
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+secrets:
+  zotero_api_key:
+    file: ./secrets/zotero_api_key
+  sharelatex_git_token:
+    file: ./secrets/sharelatex_git_token
